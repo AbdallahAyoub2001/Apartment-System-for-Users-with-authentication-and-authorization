@@ -1,29 +1,28 @@
 const db = require('../../../db/db');
+const { Neighborhood } = require("../../../db/DatabaseTables");
 
 class NeighborhoodModel {
     async addNeighborhood(info) {
         let [id] = await db('neighborhood').insert({
             name: info.name, location: info.location
         });
-        // await db.destroy();
 
         return id;
     }
 
     async getNeighborhoods() {
-        // await db.destroy();
-        return db.select().from('neighborhood');
+        return db.select().from(Neighborhood);
     }
+
     async getNeighborhood(key, value) {
         let Neighborhood;
-        Neighborhood = await db('neighborhood').where(key, value);
-        // console.log()
+        Neighborhood = await db(Neighborhood).where(key, value);
         return Neighborhood;
     }
 
     async updateNeighborhood(id, info) {
 
-        return db('neighborhood')
+        return db(Neighborhood)
             .where({ id: id })
             .update({
                 name: info.name,
@@ -31,8 +30,9 @@ class NeighborhoodModel {
             }, ['id']);
 
     }
+
     async deleteNeighborhood(id) {
-        return db('neighborhood')
+        return db(Neighborhood)
             .where({ id: id })
             .del();
     }

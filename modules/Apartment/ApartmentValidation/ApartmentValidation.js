@@ -1,5 +1,6 @@
 const { body, validationResult, param} = require('express-validator')
 const db = require("../../../db/db");
+const { Apartments } = require('../../../db/DatabaseTables');
 
 // check that the name isn't empty
 let type = body('type').notEmpty().withMessage('Type cannot be empty')
@@ -11,7 +12,7 @@ let status = body('status').notEmpty().withMessage('Status cannot be empty')
 
 // check that the given id belongs to a user
 let id = param('apartment_id').custom(async (value) => {
-    const apartment = await db('apartments').where('id', value).first();
+    const apartment = await db(Apartments).where('id', value).first();
     if (!apartment) {
         throw new Error();
     }

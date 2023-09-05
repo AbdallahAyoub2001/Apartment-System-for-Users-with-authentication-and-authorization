@@ -1,8 +1,9 @@
 const db = require('../../../db/db');
+const {Group, Group_Permission} = require('../../../db/DatabaseTables');
 
 class GroupModel {
     async addGroup(info) {
-        let [id] = await db('group').insert({
+        let [id] = await db(Group).insert({
             name: info.name
         });
 
@@ -19,12 +20,12 @@ class GroupModel {
 
     async getGroups() {
         // await db.destroy();
-        return db.select().from('group');
+        return db.select().from(Group);
     }
 
     async getGroup(key, value) {
         let group;
-        group = await db('group').where(key, value);
+        group = await db(Group).where(key, value);
         let permission = await this.getPermissionsOfGroup(value);
         // console.log()
         return [group, permission];
@@ -37,7 +38,7 @@ class GroupModel {
             await this.assignPermissionToGroup(value, id);
         }
 
-        return db('group')
+        return db(Group)
             .where({ group_id: id })
             .update({
                 name: info.name,
@@ -48,7 +49,7 @@ class GroupModel {
         let del = this.deletePermissionsOfGroup(id);
 
         if(del)
-            return db('group')
+            return db(Group)
                 .where({ group_id: id })
                 .del();
 
@@ -56,7 +57,7 @@ class GroupModel {
     }
 
     async assignPermissionToGroup(code_id, group_id) {
-        let [assignment] = await db('group_permission').insert({
+        let [assignment] = await db(Group_Permission).insert({
             group_id, code_id
         });
 
@@ -64,7 +65,7 @@ class GroupModel {
     }
 
     async updatePermissionOfGroup(code_id, group_id, info) {
-        return db('group_permission')
+        return db(Group_Permission)
             .where({ group_id, code_id })
             .update({
                 code_id: info.code_id,
@@ -73,7 +74,7 @@ class GroupModel {
 
     async getPermissionOfGroup(code_id, group_id) {
         let permission;
-        permission = await db('group_permission').select('*')
+        permission = await db(Group_Permission).select('*')
             .where({ group_id: group_id, code_id: code_id });
         // console.log()
         return permission;
@@ -81,20 +82,20 @@ class GroupModel {
 
     async getPermissionsOfGroup(group_id) {
         let permissions;
-        permissions = await db('group_permission').select('*')
+        permissions = await db(Group_Permission).select('*')
             .where({ group_id: group_id});
         // console.log()
         return permissions;
     }
 
     async deletePermissionOfGroup(code_id, group_id) {
-        return db('group_permission')
+        return db(Group_Permission)
             .where({ group_id: group_id, code_id: code_id })
             .del();
     }
 
     async deletePermissionsOfGroup(group_id) {
-        return db('group_permission')
+        return db(Group_Permission)
             .where({ group_id: group_id })
             .del();
     }

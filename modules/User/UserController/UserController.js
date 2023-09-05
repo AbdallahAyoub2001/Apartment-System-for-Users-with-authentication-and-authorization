@@ -1,8 +1,4 @@
 const userService = require('../UserService/userService');
-// const userDAO = require("../UserModel/UserModel");
-// const authService = require('../../middlewares/auth');
-// const jwt = require('jsonwebtoken');
-// const url = require("url");
 
 class userController {
     async addUser(req, res) {

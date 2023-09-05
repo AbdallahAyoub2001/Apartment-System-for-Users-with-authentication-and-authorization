@@ -1,12 +1,13 @@
 const { body, validationResult, param} = require('express-validator')
 const db = require("../../../db/db");
+const { Permission} = require('../../../db/DatabaseTables');
 
 // check that the name isn't empty
 let name = body('name').notEmpty().withMessage('Name cannot be empty');
 
 // check that the given code_id belongs to a user
 let code_id = param('code_id').custom(async (value) => {
-    const apartment = await db('permission').where('code_id', value).first();
+    const apartment = await db(Permission).where('code_id', value).first();
     if (!apartment) {
         throw new Error();
     }

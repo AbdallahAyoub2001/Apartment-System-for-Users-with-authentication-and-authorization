@@ -17,4 +17,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(bodyParser.json());
 
-app.listen(3000, () => { })
+app.listen(3000, () => {
+    console.log("The server is listening on port 3000:");
+})

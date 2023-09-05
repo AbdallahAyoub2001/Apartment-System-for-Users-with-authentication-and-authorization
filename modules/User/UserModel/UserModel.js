@@ -1,12 +1,12 @@
 const db = require('../../../db/db');
+const { Users, User_Group} = require('../../../db/DatabaseTables');
 const bcrypt = require('bcrypt');
-// const authService = require("../../middlewares/auth");
 
 class UserModel {
     async addUser(userInfo) { // how to prevent adding user if the groups weren't added successfully
         const hashedPassword = await this.hashPassword(userInfo.password);
 
-        let [id] = await db('users').insert({
+        let [id] = await db(Users).insert({
             email: userInfo.email, name: userInfo.name, password: hashedPassword
         });
 
@@ -19,23 +19,17 @@ class UserModel {
     }
 
     async getUsers() {
-        // await db.destroy();
-        return db.select().from('users');
+        return db.select().from(Users);
     }
+
     async getUser(key, value) {
         let user;
-        user = await db('users').where(key, value);
+        user = await db(Users).where(key, value);
         console.log(user[0].id)
         let groups = await this.getUserGroups(user[0].id);
         console.log(groups)
         return [user, groups];
     }
-
-    // async getUserPassword(email) {
-    //     let pass;
-    //     pass = await db.select('password').from('users').where('email', email);
-    //     return pass;
-    // }
 
     async updateUser(id, userInfo) {
         const hashedPassword = await this.hashPassword(userInfo.password);
@@ -46,7 +40,7 @@ class UserModel {
             await this.assignUserToGroup(id, value);
         }
 
-        return db('users')
+        return db(Users)
             .where({ id: id })
             .update({
                 email: userInfo.email,
@@ -57,11 +51,12 @@ class UserModel {
             }, ['id']);
 
     }
+
     async deleteUser(id) {
         let groups = this.deleteUserGroups(id);
 
         if(groups)
-            return db('users')
+            return db(Users)
                 .where({ id: id })
                 .del();
     }
@@ -72,24 +67,16 @@ class UserModel {
     };
 
     async assignUserToGroup(user_id, group_id) {
-        let [id] = await db('user_group').insert({
+        let [id] = await db(User_Group).insert({
             user_id, group_id
         });
 
         return id;
     }
 
-    // async updateUserGroups(id, group_id, info) {
-    //     return db('user_group')
-    //         .where({ group_id, code_id })
-    //         .update({
-    //             code_id: info.code_id,
-    //         }, ['code_id', 'group_id']);
-    // }
-
     async getUserGroups(user_id) {
         let groups;
-        groups = await db('user_group').select('group_id')
+        groups = await db(User_Group).select('group_id')
             .where({ user_id });
         // console.log()
         return groups;
@@ -97,7 +84,7 @@ class UserModel {
 
     async getUsersOfGroup(group_id) {
         let users;
-        users = await db('user_group').select('*')
+        users = await db(User_Group).select('*')
             .where({ group_id: group_id});
 
         console.log(users)
@@ -105,13 +92,13 @@ class UserModel {
     }
 
     async deleteUserFromGroup(user_id, group_id) {
-        return db('user_group')
+        return db(User_Group)
             .where({ group_id, code_id })
             .del();
     }
 
     async deleteUserGroups(id) {
-        return db('user_group')
+        return db(User_Group)
             .where({ user_id: id })
             .del();
     }

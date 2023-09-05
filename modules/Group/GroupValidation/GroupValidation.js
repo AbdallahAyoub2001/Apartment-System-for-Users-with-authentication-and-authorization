@@ -1,12 +1,13 @@
 const { body, validationResult, param} = require('express-validator')
 const db = require("../../../db/db");
+const {Group, Group_Permission, Permission} = require('../../../db/DatabaseTables');
 
 // check that the name isn't empty
 let name = body('name').notEmpty().withMessage('Name cannot be empty');
 
 // check that the given group_id belongs to a user
 let group_id = param('group_id').custom(async (value) => {
-    const apartment = await db('group').where('group_id', value).first();
+    const apartment = await db(Group).where('group_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -14,7 +15,7 @@ let group_id = param('group_id').custom(async (value) => {
 }).withMessage('Group does not exist!!');
 
 let group_id_exist = param('group_id').custom(async (value) => {
-    const apartment = await db('group_permission').where('group_id', value).first();
+    const apartment = await db(Group_Permission).where('group_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -30,7 +31,7 @@ let code_id = param('code_id').custom(async (value) => {
 }).withMessage('Permission does not exist!!');
 
 let code_id_exist = param('group_code_id').custom(async (value) => {
-    const apartment = await db('group_permission').where('code_id', value).first();
+    const apartment = await db(Group_Permission).where('code_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -38,7 +39,7 @@ let code_id_exist = param('group_code_id').custom(async (value) => {
 }).withMessage('Permission does not exist!!');
 
 let new_code_id = body('code_id').custom(async (value) => {
-    const apartment = await db('permission').where('code_id', value).first();
+    const apartment = await db(Permission).where('code_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -49,7 +50,7 @@ const validatePermissionIndices = body('permissions')
     .isArray({ min: 1 }).withMessage('There are no permission attached!')
     .custom(async (permissions) => {
         // console.log(permissions);
-        const existingIds = await db('permission')
+        const existingIds = await db(Permission)
             .whereIn('code_id', permissions);
 
         const existingIdsSet = new Set(existingIds.map(item => item.code_id));
@@ -59,15 +60,6 @@ const validatePermissionIndices = body('permissions')
         if (missingIds.length > 0) {
             throw new Error(`IDs ${missingIds.join(', ')} do not exist in the permissions`);
         }
-
-        // for(const id of ids){
-        //     console.log(id);
-        //     const perm = await db('permission').where('code_id', value).first();
-        //     console.log(perm);
-        //     if (!perm) {
-        //         throw new Error(`This id: ${id} does not exist`);
-        //     }
-        // }
 
         return true; // Validation passed
     });

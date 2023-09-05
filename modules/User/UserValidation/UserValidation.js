@@ -1,6 +1,6 @@
 const { body, validationResult, param} = require('express-validator')
 const db = require("../../../db/db");
-
+const { Users, User_Group, Group} = require('../../../db/DatabaseTables');
 
 let email = body('email').notEmpty().isEmail().withMessage('Enter a valid email.');
 
@@ -11,7 +11,7 @@ let password = body('password').notEmpty().isLength({ min: 5 }).withMessage('pas
 
 // check that the given id belongs to a user
 let id = param('user_id').custom(async (value) => {
-    const user = await db('users').where('id', value).first();
+    const user = await db(Users).where('id', value).first();
     if (!user) {
         throw new Error();
     }
@@ -19,7 +19,7 @@ let id = param('user_id').custom(async (value) => {
 }).withMessage('User does not exist!!');
 
 let user_id_exist = param('user_id').custom(async (value) => {
-    const apartment = await db('user_group').where('user_id', value).first();
+    const apartment = await db(User_Group).where('user_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -28,7 +28,7 @@ let user_id_exist = param('user_id').custom(async (value) => {
 
 // check that the given group_id belongs to a user
 let group_id = param('group_id').custom(async (value) => {
-    const apartment = await db('group').where('group_id', value).first();
+    const apartment = await db(Group).where('group_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -36,7 +36,7 @@ let group_id = param('group_id').custom(async (value) => {
 }).withMessage('Group does not exist!!');
 
 let group_id_exist = param('group_id').custom(async (value) => {
-    const apartment = await db('user_group').where('group_id', value).first();
+    const apartment = await db(User_Group).where('group_id', value).first();
     if (!apartment) {
         throw new Error();
     }
@@ -47,7 +47,7 @@ const validateGroupsIndices = body('groups')
     .isArray({ min: 1 }).withMessage('There are no groups attached!')
     .custom(async (groups) => {
         // console.log(permissions);
-        const existingIds = await db('group')
+        const existingIds = await db(Group)
             .whereIn('group_id', groups);
 
         const existingIdsSet = new Set(existingIds.map(item => item.group_id));

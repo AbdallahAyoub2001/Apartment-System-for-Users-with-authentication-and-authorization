@@ -1,8 +1,9 @@
 const db = require('../../../db/db');
+const { Apartments } = require('../../../db/DatabaseTables');
 
 class ApartmentModel {
     async addApartment(info) {
-        let [id] = await db('apartments').insert({
+        let [id] = await db(Apartments).insert({
             type: info.type, status: info.status
         });
         // await db.destroy();
@@ -11,20 +12,19 @@ class ApartmentModel {
     }
 
     async getApartments() {
-        let apartments = await db.select().from('apartments');
-        // await db.destroy();
-        return apartments;
+        return db.select().from(Apartments);
     }
+
     async getApartment(key, value) {
         let apartment;
-        apartment = await db('apartments').where(key, value);
+        apartment = await db(Apartments).where(key, value);
         // console.log()
         return apartment;
     }
 
     async updateApartment(id, info) {
 
-        return db('apartments')
+        return db(Apartments)
             .where({ id: id })
             .update({
                 type: info.type,
@@ -33,7 +33,7 @@ class ApartmentModel {
 
     }
     async deleteApartment(id) {
-        return db('apartments')
+        return db(Apartments)
             .where({ id: id })
             .del();
     }

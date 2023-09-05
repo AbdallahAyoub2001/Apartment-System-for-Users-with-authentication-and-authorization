@@ -1,6 +1,4 @@
 const ApartmentModel = require('../ApartmentModel/ApartmentModel')
-require("../../../db/db");
-require('../../middlewares/auth');
 
 class ApartmentService {
     async addApartment(info) {

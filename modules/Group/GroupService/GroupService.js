@@ -1,21 +1,18 @@
 const GroupModel = require('../GroupModel/GroupModel')
-require("../../../db/db");
-require('../../middlewares/auth');
 
 class GroupService {
     async addGroup(info) {
-
-        // const {email, name, password, age, department} = info;
-
         return GroupModel.addGroup(info);
     }
 
     async getGroups() {
         return GroupModel.getGroups();
     }
+
     async getGroup(key, value) {
         return GroupModel.getGroup(key, value);
     }
+
     async updateGroup(id, info) {
         return GroupModel.updateGroup(id, info);
     }

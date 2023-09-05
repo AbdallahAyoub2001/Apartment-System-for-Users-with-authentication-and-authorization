@@ -1,16 +1,10 @@
 const userDAO = require('../UserModel/UserModel')
-// const db = require("../../../db/db");
-// const authService = require('../../middlewares/auth');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-// const GroupModel = require("../../Group/GroupModel/GroupModel");
 const secretKey = 'secret-key';
 
 class userServices {
     async addUser(userInfo) {
-
-        // const {email, name, password, age, department} = userInfo;
-
         return userDAO.addUser(userInfo);
     }
 
@@ -38,6 +32,7 @@ class userServices {
     getUsers() {
         return userDAO.getUsers();
     }
+
     getUser(key, value) {
         return userDAO.getUser(key, value);
     }
