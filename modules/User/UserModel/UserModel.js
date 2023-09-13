@@ -1,6 +1,7 @@
 const db = require('../../../db/db');
-const { Users, User_Group} = require('../../../db/DatabaseTables');
+const { Users, User_Group, User_Files, File_Manager} = require('../../../db/DatabaseTables');
 const bcrypt = require('bcrypt');
+// const fManager = require('../../fileManager/fManagerModel/fManagerModel');
 
 class UserModel {
     async addUser(userInfo) { // how to prevent adding user if the groups weren't added successfully
@@ -74,6 +75,37 @@ class UserModel {
         return id;
     }
 
+    async assignFileToUser(user_id, file_id) {
+
+        let [id] = await db(User_Files).insert({
+            user_id, file_id
+        });
+
+        return id;
+    }
+
+    async assignFilesToUser(user_id, files) {
+
+        try {
+            // Create an array of values to be inserted
+            const values = files.map((file) => ({
+                user_id,
+                file_id: file.file_id,
+            }));
+
+            // Execute the bulk insert query
+            const [file_id] = await db(User_Files).insert(values);
+
+            return file_id;
+        } catch (err) {
+            console.error('Error Adding files to User_Files table:', err);
+            throw err;
+        }
+    }
+
+
+
+
     async getUserGroups(user_id) {
         let groups;
         groups = await db(User_Group).select('group_id')
@@ -94,6 +126,12 @@ class UserModel {
     async deleteUserFromGroup(user_id, group_id) {
         return db(User_Group)
             .where({ group_id, code_id })
+            .del();
+    }
+
+    async deleteFileOfUser(file_id) {
+        return db(User_Files)
+            .where({ file_id })
             .del();
     }
 

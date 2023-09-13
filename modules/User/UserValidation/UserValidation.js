@@ -43,6 +43,15 @@ let group_id_exist = param('group_id').custom(async (value) => {
     return true;
 }).withMessage('Group does not exist!!');
 
+let file_id = param('file_id').custom(async (value) => {
+    const file = await db('file_manager').where('file_id', value).first();
+
+    if (!file) {
+        throw new Error();
+    }
+    return true;
+}).withMessage('File does not exist!!');
+
 const validateGroupsIndices = body('groups')
     .isArray({ min: 1 }).withMessage('There are no groups attached!')
     .custom(async (groups) => {
@@ -109,6 +118,15 @@ const deleteUserFromGroupValidation = [
     group_id_exist
 ]
 
+const addUserFilesValidation = [
+    user_id_exist
+]
+
+const deleteUserFilesValidation = [
+    file_id,
+    user_id_exist
+]
+
 const validate = (req, res, next) => {
     const errors = validationResult(req)
     if (errors.isEmpty()) {
@@ -132,6 +150,7 @@ module.exports = {
     addUserToGroupValidation,
     getGroupUsersValidation,
     deleteUserFromGroupValidation,
-
+    addUserFilesValidation,
+    deleteUserFilesValidation,
     validate,
 }

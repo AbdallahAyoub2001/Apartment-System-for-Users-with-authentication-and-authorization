@@ -5,10 +5,10 @@ module.exports = {
             host: '127.0.0.1',
             user: 'root',
             password: '',
-            database: 'apartment_sys_test'
+            database: 'apartment_booking_sys'
         },
         migrations: { // knex migrate:latest --knexfile db/knexfile.js
-            directory: "./migrations/migrations",
+            directory: "./db/migrations/migrations",
 
         }
     },

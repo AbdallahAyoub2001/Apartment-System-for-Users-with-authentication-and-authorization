@@ -12,6 +12,14 @@ class userServices {
         return userDAO.assignUserToGroup(user_id, group_id);
     }
 
+    async assignFileToUser(user_id, file_id) {
+        return userDAO.assignFileToUser(user_id, file_id);
+    }
+
+    async assignFilesToUser(user_id, file_id) {
+        return userDAO.assignFilesToUser(user_id, file_id);
+    }
+
     async authenticateUser (userLoginInfo){
         let user = await userDAO.getUser('email', userLoginInfo.email);
         // console.log(userLoginInfo.email,user[0].password)
@@ -47,6 +55,10 @@ class userServices {
 
     async deleteUser(id) {
         return userDAO.deleteUser(id);
+    }
+
+    async deleteFileOfUser(file_id) {
+        return userDAO.deleteFileOfUser(file_id);
     }
 
     async deleteUserFromGroup(id, group_id) {

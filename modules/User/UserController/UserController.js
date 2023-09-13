@@ -1,4 +1,7 @@
 const userService = require('../UserService/userService');
+const fManager = require('../../fileManager/fManagerModel/fManagerModel');
+const {User_Files} = require("../../../db/DatabaseTables");
+const db = require('../../../db/db');
 
 class userController {
     async addUser(req, res) {
@@ -19,7 +22,41 @@ class userController {
             return res.status(200).json(q);
         } catch (err) {
             console.error(err);
-            return res.status(500).json("Couldn't assign the permission to the group!");
+            return res.status(500).json("Couldn't assign the user to the group!");
+        }
+    }
+
+    async assignFilesToUser(req, res) {
+        const userId = req.params.user_id;
+        try {
+            // fManager.upload middleware handles file upload
+            fManager.upload.array('file')(req, res, async function (err) {
+                if (err) {
+                    console.error('Error uploading file:', err);
+                    return res.status(500).json({ message: 'File upload failed' });
+                }
+
+                // Access the uploaded file details from req.file
+                const uploadedFiles = req.files;
+                // console.log(uploadedFiles)
+
+                const results = await fManager.bulkInsertFiles(uploadedFiles, req);
+                await userService.assignFilesToUser(userId, results.file_id);
+
+                // Loop through uploaded files and process them
+                // for (const uploadedFile of uploadedFiles) {
+                //     // Call the addFileToServer method to handle metadata insertion for each file
+                //     const result = await fManager.uploadFile(uploadedFile, req);
+                //     await userService.assignFileToUser(userId, result.file_id);
+                //     results.push(result);
+                // }
+
+                res.status(200).json(results);
+            });
+
+        } catch (error) {
+            console.error('Error handling file upload and insertion:', error);
+            return res.status(500).json({ message: 'File upload and insertion failed' });
         }
     }
 
@@ -79,11 +116,34 @@ class userController {
     async deleteUser(req, res) {
         try {
             const id = req.params.user_id;
+
+            let userFiles = await db(User_Files).where('user_id', id);
+            console.log(userFiles)
+            for(const file of userFiles){
+                await fManager.deleteFile(file.file_id);
+                await userService.deleteFileOfUser(file.file_id);
+            }
+
             const q = await userService.deleteUser(id);
             return res.status(200).json(q);
         } catch (err) {
             console.error(err);
             return res.status(500).json("Something went wrong!");
+        }
+    }
+
+    async deleteFileOfUser(req, res) {
+        const { file_id } = req.params;
+
+        try {
+            // Calling the deleteFile method to delete the file from the server and database
+            await fManager.deleteFile(file_id);
+            await userService.deleteFileOfUser(file_id);
+
+            return res.status(200).json({ message: 'File deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            return res.status(500).json({ message: 'File deletion failed' });
         }
     }
 
@@ -101,7 +161,29 @@ class userController {
 
     async signup(req, res){
         try {
+
             const userId = await userService.addUser(req.body);
+
+            if (req.files || Object.keys(req.files).length > 0) {
+                fManager.upload.single('file')(req, res, async function (err) {
+                    if (err) {
+                        console.error('Error uploading file:', err);
+                        return res.status(500).json({message: 'File upload failed'});
+                    }
+
+                    // Access the uploaded file details from req.file
+                    const uploadedFiles = req.files;
+
+                    // Loop through uploaded files and process them
+                    for (const uploadedFile of uploadedFiles) {
+                        // Call the addFileToServer method to handle metadata insertion for each file
+                        const result = await fManager.uploadFile(uploadedFile, req);
+                        await userService.assignFileToUser(userId, result.file_id);
+                    }
+
+                });
+            }
+
             res.status(201).json({ userId });
         } catch (error) {
             console.error(error);

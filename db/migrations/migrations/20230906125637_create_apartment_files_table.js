@@ -3,11 +3,12 @@
  * @returns {Knex.SchemaBuilder}
  */
 exports.up = function(knex) {
-    return knex.schema.createTable('user_group', table => {
+    return knex.schema.createTable('apartment_files', table => {
         table.increments('id');
-        table.string('user_id').notNullable();
-        table.string('group_id').notNullable();
+        table.string('apartment_id').notNullable();
+        table.string('file_id').notNullable();
     })
+
 };
 
 /**
@@ -15,5 +16,5 @@ exports.up = function(knex) {
  * @returns {Knex.SchemaBuilder}
  */
 exports.down = function(knex) {
-    return knex.schema.dropTable('user_group');
+    return knex.schema.dropTable('apartment_files');
 };

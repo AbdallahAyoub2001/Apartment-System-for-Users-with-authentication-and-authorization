@@ -5,6 +5,9 @@ const Group_Permission = "group_permission";
 const Permission = "permission";
 const Apartments = "apartments";
 const Neighborhood = "neighborhood";
+const File_Manager = "file_manager";
+const User_Files = "user_files";
+const Apartment_Files = "apartment_files";
 
 module.exports = {
     Users,
@@ -13,5 +16,8 @@ module.exports = {
     Group_Permission,
     Permission,
     Apartments,
-    Neighborhood
+    Neighborhood,
+    File_Manager,
+    User_Files,
+    Apartment_Files,
 }
