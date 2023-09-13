@@ -119,12 +119,16 @@ const deleteUserFromGroupValidation = [
 ]
 
 const addUserFilesValidation = [
-    user_id_exist
+    id
 ]
 
 const deleteUserFilesValidation = [
     file_id,
-    user_id_exist
+    id
+]
+
+const getUserFilesValidation = [
+    id
 ]
 
 const validate = (req, res, next) => {
@@ -152,5 +156,6 @@ module.exports = {
     deleteUserFromGroupValidation,
     addUserFilesValidation,
     deleteUserFilesValidation,
+    getUserFilesValidation,
     validate,
 }

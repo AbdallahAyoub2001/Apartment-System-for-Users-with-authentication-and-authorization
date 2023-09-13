@@ -2,7 +2,7 @@ const db = require('../../../db/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { File_Manager} = require("../../../db/DatabaseTables");
+const { File_Manager, User_Files} = require("../../../db/DatabaseTables");
 
 class fManagerModel {
 
@@ -31,7 +31,6 @@ class fManagerModel {
         const maxCount = 10; // Define the maximum number of files to upload (adjust as needed)
         this.upload = multer({ storage: this.storage });
 
-        // Use upload.array instead of upload.single
         this.uploadMiddleware = this.upload.array('files', maxCount);
     }
 
@@ -62,21 +61,14 @@ class fManagerModel {
 
     }
 
-    pick(obj, keys) {
-        return keys.reduce((acc, key) => {
-            if (obj.hasOwnProperty(key)) {
-                acc[key] = obj[key];
-            }
-            return acc;
-        }, {});
-    }
-
     async bulkInsertFiles(files, req) {
         const folder = req.url.includes('/users/') ? 'users' : 'apartments';
+        // let filesID = []
 
         try {
             // Create an array of values to be inserted
             const values = files.map((file) => ({
+
                 old_name: file.originalname,
                 new_name: file.filename,
                 folder: folder,
@@ -85,6 +77,7 @@ class fManagerModel {
 
             // Execute the bulk insert query
             const [file_id] =  await db(File_Manager).insert(values);
+            // console.log(file_id)
 
             return file_id;
         } catch (error) {
@@ -93,8 +86,24 @@ class fManagerModel {
         }
     }
 
-    async getFileStream(fileId) {
+    async getUserFiles(userId) {
+        let filesWithData = [];
+        try {
+            // Execute the query to fetch user files by user_id
+            const userFiles = await db(User_Files).where('user_id', userId);
 
+
+            // Fetch the file content for each user file
+            return await Promise.all(userFiles.map(async (record) => {
+
+                const fileData = await db(File_Manager).where('file_id', record.file_id);
+
+                return fileData[0];
+            }));
+        } catch (error) {
+            console.error('Error fetching user files:', error);
+            throw error;
+        }
     }
 
     async deleteFile(file_id) {

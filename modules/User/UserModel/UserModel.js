@@ -1,5 +1,5 @@
 const db = require('../../../db/db');
-const { Users, User_Group, User_Files, File_Manager} = require('../../../db/DatabaseTables');
+const { Users, User_Group, User_Files} = require('../../../db/DatabaseTables');
 const bcrypt = require('bcrypt');
 // const fManager = require('../../fileManager/fManagerModel/fManagerModel');
 
@@ -26,9 +26,9 @@ class UserModel {
     async getUser(key, value) {
         let user;
         user = await db(Users).where(key, value);
-        console.log(user[0].id)
+        // console.log(user[0].id)
         let groups = await this.getUserGroups(user[0].id);
-        console.log(groups)
+        // console.log(groups)
         return [user, groups];
     }
 
@@ -84,19 +84,30 @@ class UserModel {
         return id;
     }
 
-    async assignFilesToUser(user_id, files) {
+    async assignFilesToUser(user_id, filesID) {
 
+
+        // console.log(files)
         try {
-            // Create an array of values to be inserted
-            const values = files.map((file) => ({
-                user_id,
-                file_id: file.file_id,
-            }));
+            if(!Array.isArray(filesID)){
+                const [file_id] = await db(User_Files).insert({
+                        user_id, file_id: filesID,
+                });
+                return file_id;
+            } else {
+                // Create an array of values to be inserted
+                const values = filesID.map((file) => ({
+                    user_id,
+                    file_id: file,
+                }));
 
-            // Execute the bulk insert query
-            const [file_id] = await db(User_Files).insert(values);
+                // Execute the bulk insert query
+                const [file_id] = await db(User_Files).insert(values);
+                return file_id;
+            }
 
-            return file_id;
+
+
         } catch (err) {
             console.error('Error Adding files to User_Files table:', err);
             throw err;
@@ -119,7 +130,7 @@ class UserModel {
         users = await db(User_Group).select('*')
             .where({ group_id: group_id});
 
-        console.log(users)
+        // console.log(users)
         return users;
     }
 

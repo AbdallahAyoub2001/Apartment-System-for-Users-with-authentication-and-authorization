@@ -5,13 +5,13 @@ const { postValidation, putValidation, getValidation,
     deleteValidation, signupValidation, loginValidation,
     addUserToGroupValidation, getGroupUsersValidation,
     deleteUserFromGroupValidation, addUserFilesValidation,
-    deleteUserFilesValidation, validate } = require('../UserValidation/UserValidation.js')
-const bodyParser = require("body-parser");
+    deleteUserFilesValidation, getUserFilesValidation, validate } = require('../UserValidation/UserValidation.js')
 const authService = require('../../middlewares/auth');
 const authorization = require('../../middlewares/authorization');
 
-const router = express.Router();
+const fManager = require('../../fileManager/fManagerModel/fManagerModel');
 
+const router = express.Router();
 
 
 //The main page of the server
@@ -26,7 +26,7 @@ router.post('/users', authService.authenticated, authorization.authorized(["U02"
 router.post('/users/:user_id/groups/:group_id', authService.authenticated, authorization.authorized(["AD01"]), addUserToGroupValidation, validate, userController.assignUserToGroup);
 
 // Add a file for a user
-router.post('/users/:user_id/files', authService.authenticated, authorization.authorized(["U02"]), addUserFilesValidation, validate, userController.assignFilesToUser);
+router.post('/users/:user_id/files', authService.authenticated, authorization.authorized(["U02"]), addUserFilesValidation, validate, fManager.upload.array('file'), userController.assignFilesToUser);
 
 // Select all users
 // select a specific user using key and value http://localhost:3000/users/?key=name&value=Abood
@@ -37,6 +37,9 @@ router.get('/users/:user_id', authService.authenticated, authorization.authorize
 
 // API to get a group users
 router.get('/users/groups/:group_id', authService.authenticated, authorization.authorized(["AD01"]), getGroupUsersValidation, validate, userController.getUsersOfGroup);
+
+// API to get a user files
+router.get('/users/:user_id/files', authService.authenticated, authorization.authorized(["U01"]), getUserFilesValidation, validate, userController.getUserFiles);
 
 // Update user's info using his id http://localhost:3000/users/id
 router.put('/users/:user_id', authService.authenticated, authorization.authorized(["U03"]), putValidation, validate, userController.updateUser);
@@ -51,7 +54,7 @@ router.delete('/users/:user_id/groups/:group_id', authService.authenticated, aut
 router.delete('/users/:user_id/files/:file_id', authService.authenticated, authorization.authorized(["U04"]), deleteUserFilesValidation, validate, userController.deleteFileOfUser);
 
 // sign-up a new user
-router.post('/signup', signupValidation, validate, userController.signup);
+router.post('/signup', fManager.upload.array('file'), signupValidation, validate, userController.signup);
 router.post('/login', loginValidation, validate, userController.login);
 
 module.exports = router;

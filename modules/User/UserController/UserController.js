@@ -29,30 +29,16 @@ class userController {
     async assignFilesToUser(req, res) {
         const userId = req.params.user_id;
         try {
-            // fManager.upload middleware handles file upload
-            fManager.upload.array('file')(req, res, async function (err) {
-                if (err) {
-                    console.error('Error uploading file:', err);
-                    return res.status(500).json({ message: 'File upload failed' });
-                }
 
                 // Access the uploaded file details from req.file
                 const uploadedFiles = req.files;
                 // console.log(uploadedFiles)
 
                 const results = await fManager.bulkInsertFiles(uploadedFiles, req);
-                await userService.assignFilesToUser(userId, results.file_id);
-
-                // Loop through uploaded files and process them
-                // for (const uploadedFile of uploadedFiles) {
-                //     // Call the addFileToServer method to handle metadata insertion for each file
-                //     const result = await fManager.uploadFile(uploadedFile, req);
-                //     await userService.assignFileToUser(userId, result.file_id);
-                //     results.push(result);
-                // }
+                await userService.assignFilesToUser(userId, results);
 
                 res.status(200).json(results);
-            });
+           // });
 
         } catch (error) {
             console.error('Error handling file upload and insertion:', error);
@@ -91,6 +77,17 @@ class userController {
         }
     }
 
+    async getUserFiles(req, res) {
+        try {
+            const user_id = req.params.user_id;
+            const files = await fManager.getUserFiles(user_id);
+            return res.status(200).json(files);
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json("Something went wrong!");
+        }
+    }
+
     async getUsersOfGroup(req, res) {
         try{
             const group_id = req.params.group_id;
@@ -118,7 +115,7 @@ class userController {
             const id = req.params.user_id;
 
             let userFiles = await db(User_Files).where('user_id', id);
-            console.log(userFiles)
+            // console.log(userFiles)
             for(const file of userFiles){
                 await fManager.deleteFile(file.file_id);
                 await userService.deleteFileOfUser(file.file_id);
@@ -161,30 +158,29 @@ class userController {
 
     async signup(req, res){
         try {
-
+            console.log(req.body)
             const userId = await userService.addUser(req.body);
+            const token =userService.generateJWTToken(userId.id, userId.email);
 
-            if (req.files || Object.keys(req.files).length > 0) {
-                fManager.upload.single('file')(req, res, async function (err) {
-                    if (err) {
-                        console.error('Error uploading file:', err);
-                        return res.status(500).json({message: 'File upload failed'});
-                    }
+            if (req.files.length > 0) {
+                // fManager.upload.single('file')(req, res, async function (err) {
+                //     if (err) {
+                //         console.error('Error uploading file:', err);
+                //         return res.status(500).json({message: 'File upload failed'});
+                //     }
 
                     // Access the uploaded file details from req.file
                     const uploadedFiles = req.files;
 
                     // Loop through uploaded files and process them
-                    for (const uploadedFile of uploadedFiles) {
-                        // Call the addFileToServer method to handle metadata insertion for each file
-                        const result = await fManager.uploadFile(uploadedFile, req);
-                        await userService.assignFileToUser(userId, result.file_id);
-                    }
+                const results = await fManager.bulkInsertFiles(uploadedFiles, req);
+                console.log(results)
+                await userService.assignFilesToUser(userId, results);
 
-                });
+                // });
             }
 
-            res.status(201).json({ userId });
+            res.status(201).json({ userId, token });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'An error occurred while signing up' });
