@@ -86,14 +86,13 @@ class UserModel {
 
     async assignFilesToUser(user_id, filesID) {
 
-
         // console.log(files)
         try {
             if(!Array.isArray(filesID)){
-                const [file_id] = await db(User_Files).insert({
+                const [id] = await db(User_Files).insert({
                         user_id, file_id: filesID,
                 });
-                return file_id;
+                return id;
             } else {
                 // Create an array of values to be inserted
                 const values = filesID.map((file) => ({
@@ -102,20 +101,15 @@ class UserModel {
                 }));
 
                 // Execute the bulk insert query
-                const [file_id] = await db(User_Files).insert(values);
-                return file_id;
+                const [id] = await db(User_Files).insert(values);
+                return id;
             }
-
-
 
         } catch (err) {
             console.error('Error Adding files to User_Files table:', err);
             throw err;
         }
     }
-
-
-
 
     async getUserGroups(user_id) {
         let groups;

@@ -158,11 +158,12 @@ class userController {
 
     async signup(req, res){
         try {
-            console.log(req.body)
+            // console.log(req.body)
             const userId = await userService.addUser(req.body);
-            const token =userService.generateJWTToken(userId.id, userId.email);
+            const [ email ] = await userService.getUser('id', userId)
+            const token =userService.generateJWTToken(userId, email);
 
-            if (req.files.length > 0) {
+            if (req.files && req.files.length > 0) {
                 // fManager.upload.single('file')(req, res, async function (err) {
                 //     if (err) {
                 //         console.error('Error uploading file:', err);

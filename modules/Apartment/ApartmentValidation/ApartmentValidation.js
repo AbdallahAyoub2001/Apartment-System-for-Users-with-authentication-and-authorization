@@ -19,6 +19,15 @@ let id = param('apartment_id').custom(async (value) => {
     return true;
 }).withMessage('Apartment does not exist!!');
 
+let file_id = param('file_id').custom(async (value) => {
+    const file = await db('file_manager').where('file_id', value).first();
+
+    if (!file) {
+        throw new Error();
+    }
+    return true;
+}).withMessage('File does not exist!!');
+
 const postValidation = [
     type,
     status,
@@ -35,6 +44,20 @@ const getValidation = [
 ]
 
 const deleteValidation = [
+    id
+]
+
+const addApartmentFilesValidation = [
+    id,
+
+]
+
+const deleteApartmentFilesValidation = [
+    file_id,
+    id
+]
+
+const getApartmentFilesValidation = [
     id
 ]
 
@@ -56,6 +79,8 @@ module.exports = {
     putValidation,
     postValidation,
     getValidation,
-
+    addApartmentFilesValidation,
+    getApartmentFilesValidation,
+    deleteApartmentFilesValidation,
     validate,
 }

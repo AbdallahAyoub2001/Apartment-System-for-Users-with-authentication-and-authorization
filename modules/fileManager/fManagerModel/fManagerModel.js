@@ -2,7 +2,7 @@ const db = require('../../../db/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { File_Manager, User_Files} = require("../../../db/DatabaseTables");
+const { File_Manager, User_Files, Apartment_Files} = require("../../../db/DatabaseTables");
 
 class fManagerModel {
 
@@ -14,7 +14,7 @@ class fManagerModel {
             destination: (req, file, cb) => {
                 // Determine the destination directory based on the user's ID
                 // const userId = req.params.userId;
-                const folder = req.url.includes('/users/') ? 'users' : 'apartments';
+                const folder = req.url.includes('/users/') || req.url.includes('signup') ? 'users' : 'apartments';
                 const uploadPath = path.join(__dirname, `../../../public/uploads/${folder}`);
                 fs.mkdirSync(uploadPath, { recursive: true });
                 cb(null, uploadPath);
@@ -87,7 +87,7 @@ class fManagerModel {
     }
 
     async getUserFiles(userId) {
-        let filesWithData = [];
+        // let filesWithData = [];
         try {
             // Execute the query to fetch user files by user_id
             const userFiles = await db(User_Files).where('user_id', userId);
@@ -106,6 +106,30 @@ class fManagerModel {
         }
     }
 
+    async getApartmentFiles(apartment_id) {
+        try {
+            const apartmentFiles = await db(Apartment_Files).where('apartment_id', apartment_id);
+
+            return await Promise.all(apartmentFiles.map(async (record) => {
+
+                const fileData = await db(File_Manager).where('file_id', record.file_id);
+
+                return fileData[0];
+            }));
+        } catch (error) {
+            console.error('Error fetching user files:', error);
+            throw error;
+        }
+    }
+
+    async getFile(file_name) {
+        const file = await db(File_Manager).where('old_name', file_name)
+            .orderBy('file_id', 'desc')
+            .first();
+        console.log(file[0]);
+        return file[0];
+    }
+
     async deleteFile(file_id) {
         try {
             // Fetch file details from the database
@@ -119,7 +143,7 @@ class fManagerModel {
 
             // Delete the file from the server's file system
             const filePath = `${__dirname}/../../../public/uploads/${folder}/${new_name}`;
-            console.log(filePath)
+            // console.log(filePath)
             await fs.unlink(filePath, async (err) => {
                 if (err) {
                     console.error('Error deleting file:', err);

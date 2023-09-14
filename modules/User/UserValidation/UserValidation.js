@@ -1,6 +1,9 @@
 const { body, validationResult, param} = require('express-validator')
 const db = require("../../../db/db");
 const { Users, User_Group, Group} = require('../../../db/DatabaseTables');
+const fManager = require('../../fileManager/fManagerModel/fManagerModel');
+const fs = require("fs");
+const path = require('path');
 
 let email = body('email').notEmpty().isEmail().withMessage('Enter a valid email.');
 
@@ -70,6 +73,20 @@ const validateGroupsIndices = body('groups')
         return true; // Validation passed
     });
 
+const filesCountValidation = body('file').custom(async (value, { req }) => {
+        if(req.files && req.files.length > 1) {
+            const folderPath = path.join(__dirname, `../../../public/uploads/Users`);
+
+            // Delete additional files (if any)
+            for (let i = 0; i < req.files.length; i++) {
+                const file = await fManager.getFile(value.filename)
+                const filePathToDelete = path.join(folderPath, file.new_name);
+                await fs.unlink(filePathToDelete);
+                console.log(`Deleted file: ${filePathToDelete}`)
+            }
+        } return true;
+}).withMessage('You have to attach only one file!');
+
 const postValidation = [
     email,
     name,
@@ -97,6 +114,7 @@ const signupValidation = [
     email,
     name,
     password,
+    filesCountValidation,
 ]
 
 const loginValidation = [
@@ -119,7 +137,8 @@ const deleteUserFromGroupValidation = [
 ]
 
 const addUserFilesValidation = [
-    id
+    id,
+    filesCountValidation
 ]
 
 const deleteUserFilesValidation = [
@@ -157,5 +176,6 @@ module.exports = {
     addUserFilesValidation,
     deleteUserFilesValidation,
     getUserFilesValidation,
+
     validate,
 }

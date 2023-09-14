@@ -8,6 +8,10 @@ class ApartmentService {
         return ApartmentModel.addApartment(info);
     }
 
+    async assignFilesToApartment(id, file_id) {
+        return ApartmentModel.assignFilesToApartment(id, file_id);
+    }
+
     async getApartments() {
         return ApartmentModel.getApartments();
     }
@@ -20,6 +24,10 @@ class ApartmentService {
 
     async deleteApartment(id) {
         return ApartmentModel.deleteApartment(id);
+    }
+
+    async deleteFileOfApartment(file_id) {
+        return ApartmentModel.deleteFileOfApartment(file_id);
     }
 
 }
