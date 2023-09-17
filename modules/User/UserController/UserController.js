@@ -164,21 +164,12 @@ class userController {
             const token =userService.generateJWTToken(userId, email);
 
             if (req.files && req.files.length > 0) {
-                // fManager.upload.single('file')(req, res, async function (err) {
-                //     if (err) {
-                //         console.error('Error uploading file:', err);
-                //         return res.status(500).json({message: 'File upload failed'});
-                //     }
+                const uploadedFiles = req.files;
 
-                    // Access the uploaded file details from req.file
-                    const uploadedFiles = req.files;
-
-                    // Loop through uploaded files and process them
                 const results = await fManager.bulkInsertFiles(uploadedFiles, req);
                 console.log(results)
                 await userService.assignFilesToUser(userId, results);
 
-                // });
             }
 
             res.status(201).json({ userId, token });

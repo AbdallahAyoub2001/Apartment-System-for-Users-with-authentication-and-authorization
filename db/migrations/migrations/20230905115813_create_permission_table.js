@@ -6,6 +6,7 @@ exports.up = function(knex) {
     return knex.schema.createTable('permission', table => {
         table.increments('code_id');
         table.string('name').notNullable();
+        table.primary('code_id');
     })
 };
 

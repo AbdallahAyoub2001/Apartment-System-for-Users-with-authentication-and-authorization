@@ -11,10 +11,8 @@ class UserModel {
             email: userInfo.email, name: userInfo.name, password: hashedPassword
         });
 
-        const userGroups = userInfo.groups;
-        for (const value of userGroups) {
-            await this.assignUserToGroup(id, value);
-        }
+        const userGroup = userInfo.group;
+        await this.assignUserToGroup(id, userGroup);
 
         return id;
     }
@@ -27,19 +25,18 @@ class UserModel {
         let user;
         user = await db(Users).where(key, value);
         // console.log(user[0].id)
-        let groups = await this.getUserGroups(user[0].id);
+        let group = await this.getUserGroup(user[0].id);
         // console.log(groups)
-        return [user, groups];
+        return [user, group];
     }
 
     async updateUser(id, userInfo) {
         const hashedPassword = await this.hashPassword(userInfo.password);
 
-        const userGroups = userInfo.groups;
-        await this.deleteUserGroups(id);
-        for (const value of userGroups) {
-            await this.assignUserToGroup(id, value);
-        }
+        const userGroup = userInfo.group;
+        await this.deleteUserGroup(id);
+        await this.assignUserToGroup(id, userGroup);
+
 
         return db(Users)
             .where({ id: id })
@@ -54,9 +51,9 @@ class UserModel {
     }
 
     async deleteUser(id) {
-        let groups = this.deleteUserGroups(id);
+        let group = this.deleteUserGroup(id);
 
-        if(groups)
+        if(group)
             return db(Users)
                 .where({ id: id })
                 .del();
@@ -111,12 +108,12 @@ class UserModel {
         }
     }
 
-    async getUserGroups(user_id) {
-        let groups;
-        groups = await db(User_Group).select('group_id')
+    async getUserGroup(user_id) {
+        let group;
+        group = await db(User_Group).select('group_id')
             .where({ user_id });
         // console.log()
-        return groups;
+        return group;
     }
 
     async getUsersOfGroup(group_id) {
@@ -140,7 +137,7 @@ class UserModel {
             .del();
     }
 
-    async deleteUserGroups(id) {
+    async deleteUserGroup(id) {
         return db(User_Group)
             .where({ user_id: id })
             .del();

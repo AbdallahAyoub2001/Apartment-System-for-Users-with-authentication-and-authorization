@@ -4,6 +4,7 @@ exports.up = function(knex) {
         table.increments('id');
         table.string('type').notNullable();
         table.string('status').notNullable();
+        table.primary('id');
     })
 };
 

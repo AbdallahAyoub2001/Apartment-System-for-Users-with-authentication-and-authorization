@@ -5,8 +5,9 @@
 exports.up = function(knex) {
     return knex.schema.createTable('group_permission', table => {
         table.increments('id');
-        table.string('group_id').notNullable();
-        table.string('code_id').notNullable();
+        table.string('group_id').notNullable().references('group_id').inTable('group');
+        table.string('code_id').notNullable().references('code_id').inTable('permission');
+        table.primary('id');
     })
 };
 

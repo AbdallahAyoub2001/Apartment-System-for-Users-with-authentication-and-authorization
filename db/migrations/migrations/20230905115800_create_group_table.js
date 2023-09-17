@@ -6,6 +6,7 @@ exports.up = function(knex) {
     return knex.schema.createTable('group', table => {
         table.increments('group_id');
         table.string('name').notNullable();
+        table.primary('group_id');
     })
 };
 

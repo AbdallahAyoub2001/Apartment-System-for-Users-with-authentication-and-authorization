@@ -9,6 +9,7 @@ exports.up = function(knex) {
         table.string('new_name').notNullable().unique();
         table.string('folder').notNullable();
         table.string('path').notNullable();
+        table.primary('file_id');
     })
 };
 

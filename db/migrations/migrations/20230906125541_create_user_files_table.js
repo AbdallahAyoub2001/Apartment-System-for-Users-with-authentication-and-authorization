@@ -5,8 +5,9 @@
 exports.up = function(knex) {
     return knex.schema.createTable('user_files', table => {
         table.increments('id');
-        table.string('user_id').notNullable();
-        table.string('file_id').notNullable();
+        table.string('user_id').notNullable().references('id').inTable('users');
+        table.string('file_id').notNullable().references('file_id').inTable('file_manager');
+        table.primary('id');
     })
 
 };

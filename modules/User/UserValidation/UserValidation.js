@@ -5,12 +5,18 @@ const fManager = require('../../fileManager/fManagerModel/fManagerModel');
 const fs = require("fs");
 const path = require('path');
 
-let email = body('email').notEmpty().isEmail().withMessage('Enter a valid email.');
+let email = body('email').notEmpty().withMessage('Enter an Email!!').isEmail().withMessage('Enter a valid email.').custom(async (value) => {
+    const existingUser = await db(Users).where('email', value).first();
+    if (existingUser) {
+        throw new Error('Email is already in use');
+    }
+    return true;
+});
 
 // check that the name isn't empty
-let name = body('name').notEmpty().withMessage('Name cannot be empty');
+let name = body('name').notEmpty().withMessage('Enter a name!!').withMessage('Name cannot be empty');
 
-let password = body('password').notEmpty().isLength({ min: 5 }).withMessage('password should be at least 5 characters');
+let password = body('password').notEmpty().withMessage('Enter a password!!').isLength({ min: 5 }).withMessage('password should be at least 5 characters');
 
 // check that the given id belongs to a user
 let id = param('user_id').custom(async (value) => {
@@ -24,6 +30,14 @@ let id = param('user_id').custom(async (value) => {
 let user_id_exist = param('user_id').custom(async (value) => {
     const apartment = await db(User_Group).where('user_id', value).first();
     if (!apartment) {
+        throw new Error();
+    }
+    return true;
+}).withMessage('User does not exist!!');
+
+let group_exist = body('group').notEmpty().withMessage('Enter a group.').custom(async (value) => {
+    const group = await db(Group).where('group_id', value).first();
+    if (!group) {
         throw new Error();
     }
     return true;
@@ -55,24 +69,6 @@ let file_id = param('file_id').custom(async (value) => {
     return true;
 }).withMessage('File does not exist!!');
 
-const validateGroupsIndices = body('groups')
-    .isArray({ min: 1 }).withMessage('There are no groups attached!')
-    .custom(async (groups) => {
-        // console.log(permissions);
-        const existingIds = await db(Group)
-            .whereIn('group_id', groups);
-
-        const existingIdsSet = new Set(existingIds.map(item => item.group_id));
-
-        const missingIds = groups.filter(id => !existingIdsSet.has(id));
-
-        if (missingIds.length > 0) {
-            throw new Error(`IDs ${missingIds.join(', ')} do not exist in the groups`);
-        }
-
-        return true; // Validation passed
-    });
-
 const filesCountValidation = body('file').custom(async (value, { req }) => {
         if(req.files && req.files.length > 1) {
             const folderPath = path.join(__dirname, `../../../public/uploads/Users`);
@@ -91,7 +87,7 @@ const postValidation = [
     email,
     name,
     password,
-    validateGroupsIndices
+    group_exist
 ]
 
 const putValidation = [
@@ -99,7 +95,7 @@ const putValidation = [
     email,
     name,
     password,
-    validateGroupsIndices
+    group_exist
 ]
 
 const getValidation = [
@@ -114,6 +110,7 @@ const signupValidation = [
     email,
     name,
     password,
+    group_exist,
     filesCountValidation,
 ]
 
@@ -156,7 +153,7 @@ const validate = (req, res, next) => {
         return next()
     }
     const extractedErrors = []
-    errors.array().map(err => extractedErrors.push({ [err.param]: err.msg }))
+    errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }))
 
     return res.status(422).json({
         errors: extractedErrors,

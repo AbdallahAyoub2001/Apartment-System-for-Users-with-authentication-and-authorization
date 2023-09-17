@@ -7,6 +7,7 @@ exports.up = function(knex) {
         table.increments('id');
         table.string('name').notNullable().unique();
         table.string('location').notNullable();
+        table.primary('id');
     })
 };
 
