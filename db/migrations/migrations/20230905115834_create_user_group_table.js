@@ -4,10 +4,11 @@
  */
 exports.up = function(knex) {
     return knex.schema.createTable('user_group', table => {
-        table.increments('id');
-        table.string('user_id').notNullable().references('id').inTable('users');
-        table.string('group_id').notNullable().references('group_id').inTable('group');
-        table.primary('id');
+        table.increments('id').primary();
+        table.integer('user_id').unsigned();;
+        table.integer('group_id').unsigned();;
+        table.foreign('user_id').references('users.id');
+        table.foreign('group_id').references('group.group_id');
     })
 };
 
