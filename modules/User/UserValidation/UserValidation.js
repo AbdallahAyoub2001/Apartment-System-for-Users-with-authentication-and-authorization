@@ -5,7 +5,9 @@ const fManager = require('../../fileManager/fManagerModel/fManagerModel');
 const fs = require("fs");
 const path = require('path');
 
-let email = body('email').notEmpty().withMessage('Enter an Email!!').isEmail().withMessage('Enter a valid email.').custom(async (value) => {
+let email = body('email').notEmpty().withMessage('Enter an Email!!').isEmail().withMessage('Enter a valid email.');
+
+let existedEmail = body('email').custom(async (value) => {
     const existingUser = await db(Users).where('email', value).first();
     if (existingUser) {
         throw new Error('Email is already in use');
@@ -85,6 +87,7 @@ const filesCountValidation = body('file').custom(async (value, { req }) => {
 
 const postValidation = [
     email,
+    existedEmail,
     name,
     password,
     group_exist
@@ -108,6 +111,7 @@ const deleteValidation = [
 
 const signupValidation = [
     email,
+    existedEmail,
     name,
     password,
     group_exist,
